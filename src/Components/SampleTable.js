@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { CCard, CCardHeader, CCol, CFormInput, CFormCheck } from '@coreui/react'
+import { CCard, CCardHeader, CCol, CFormInput, CFormCheck, CTooltip } from '@coreui/react'
 import './custom.css'
 import {
     createColumnHelper,
@@ -21,6 +21,7 @@ const SampleTable = () => {
     const [url, seturl] = useState('https://jsonmock.hackerrank.com/api/movies/search/?page=' + pagination.pageIndex);
     const { data, totalPages } = useFetch(url)
     const [rowSelection, setRowSelection] = useState({});
+    const [favorites, setFavorites] = useState([])
 
     useEffect(() => {
         seturl('https://jsonmock.hackerrank.com/api/movies/search/?page=' + pagination.pageIndex)
@@ -42,6 +43,14 @@ const SampleTable = () => {
             cell: info => info.renderValue(),
         })
     ]
+
+    const addToFavorites = (rowId) => {
+        const selectedRows = table.getSelectedRowModel().rows.map((row) => row.original);
+        setFavorites((prev) => [...prev, ...selectedRows]);
+        setRowSelection({});
+        console.log(selectedRows)
+    };
+
 
     const table = useReactTable({
         data,
@@ -105,6 +114,7 @@ const SampleTable = () => {
                                                     onChange: row.getToggleSelectedHandler(),
                                                 }}
                                             />
+
                                         </CCol>
                                     </td>
                                     {row.getVisibleCells().map((cell) => (
@@ -119,21 +129,26 @@ const SampleTable = () => {
 
                     {/* Pagination */}
                     <div className="flex justify-between items-center mt-4">
-                        <button onClick={() => setPagination((prev) => ({ ...prev, pageIndex: 1 }))} disabled={pagination.pageIndex === 0} className="p-1 m-1 bg-blue-500 rounded">
+                        <button onClick={() => setPagination((prev) => ({ ...prev, pageIndex: 1 }))} disabled={pagination.pageIndex === 0} className="p-1 m-1 rounded">
                             First
                         </button>
-                        <button onClick={() => setPagination((prev) => ({ ...prev, pageIndex: prev.pageIndex - 1 }))} disabled={pagination.pageIndex === 0} className="p-1 bg-blue-500 rounded">
+                        <button onClick={() => setPagination((prev) => ({ ...prev, pageIndex: prev.pageIndex - 1 }))} disabled={pagination.pageIndex === 0} className="p-1 rounded">
                             Prev
                         </button>
                         <span className="p-2">
                             Page <strong>{table.getState().pagination.pageIndex}</strong> of {totalPages}
                         </span>
-                        <button onClick={() => setPagination((prev) => ({ ...prev, pageIndex: prev.pageIndex + 1 }))} disabled={pagination.pageIndex >= totalPages - 1} className="m-1 p-1 bg-blue-500 rounded">
+                        <button onClick={() => setPagination((prev) => ({ ...prev, pageIndex: prev.pageIndex + 1 }))} disabled={pagination.pageIndex >= totalPages - 1} className="m-1 p-1 rounded">
                             Next
                         </button>
-                        <button onClick={() => setPagination((prev) => ({ ...prev, pageIndex: totalPages }))} disabled={pagination.pageIndex >= totalPages - 1} className="p-1 bg-blue-500 rounded">
+                        <button onClick={() => setPagination((prev) => ({ ...prev, pageIndex: totalPages }))} disabled={pagination.pageIndex >= totalPages - 1} className="p-1 rounded">
                             Last
                         </button>
+                        <CTooltip content="Result in Console">
+                            <button onClick={addToFavorites} className="m-5 p-1 rounded" disabled={!table.getSelectedRowModel().rows.length}>
+                                Add to Favorites
+                            </button>
+                        </CTooltip>
                     </div>
                 </div>
             </CCol>
